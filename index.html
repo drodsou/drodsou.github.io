@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>drodsou's gists</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style></style>
+    </head>
+    <body>
+        <div id="main"></div>
+        <script>
+            function getURLP (url) { return new Promise( cb=>{
+                var xhr = new XMLHttpRequest()
+                xhr.open('GET', url, true)
+                xhr.onreadystatechange = function () {
+                    if (this.status == 200 && this.readyState == 4) {
+                        cb(this.responseText)
+                    }
+                }
+                xhr.send()
+            })}
+            
+
+
+            // main
+            (async function () {
+                var content = await getURLP('https://api.github.com/users/drodsou/gists')
+                content = JSON.parse(content)
+                
+                var files = []
+                content.forEach(f=>files.push( {file:Object.keys(f.files)[0], url:f.html_url, desc:f.description} )) 
+                files.sort( (a,b)=>a.file.toLowerCase() > b.file.toLowerCase()) 
+
+                var str  = '<table>'
+                files.forEach(f=>{
+                    str += `<tr><td><a href="${f.url}">${f.file}</a></td><td>${f.desc}</td></tr>`
+                })
+                str += '</table>'
+                main.innerHTML = str
+
+            
+            })()
+
+            
+
+        </script>
+    </body>
+</html>
