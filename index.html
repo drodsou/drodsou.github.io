@@ -10,58 +10,50 @@
                 display:flex;
                 flex-direction:column;
                 align-items:center;
-                justify-content:center;
                 font-family: Arial, Helvetica, sans-serif;
             }
-            h1 {color:grey;}
+            h1 {color:#6400b1;}
             table { border-collapse: collapse; cursor:pointer;}
             tr { border:1px solid grey; }
             tr:hover { background-color: rgba(0,0,0,.1); }
             td { padding:5px;}
-            td b {color:#9b39de ;}
+            td b {color:#6400a9;}
             a { text-decoration:none; }
 
         </style>
     </head>
     <body>
-        <h1>drodsou´s gists</h1>
         <div id="data"></div>
 
+        <script desc="getURLPe.js @ gist.github.com/drodsou" src="https://gist.githack.com/drodsou/cacb5409f5871588674116c6ee6dd368/raw/9a999168eeb79497e0535a5b126333bdad483100/getURLPe.js"></script>
         <script>
-            function getURLP (url) { return new Promise( cb=>{
-                var xhr = new XMLHttpRequest()
-                xhr.open('GET', url, true)
-                xhr.onreadystatechange = function () {
-                    if (this.status == 200 && this.readyState == 4) {
-                        console.log(this)
-                        cb(this.responseText)
-                    }
-                }
-                xhr.send()
-            })}
-            
-
-
+  
             // main
             (async function () {
-                var content = await getURLP('https://api.github.com/users/drodsou/gists')
-                content = JSON.parse(content)
-                
-                var files = []
-                content.forEach(f=>files.push( {file:Object.keys(f.files)[0], url:f.html_url, desc:f.description} )) 
-                files.sort( (a,b)=>a.file.toLowerCase() > b.file.toLowerCase()) 
 
-                var str  = '<table>'
+                var url = 'https://api.github.com/users/drodsou/gists'  //?per_page=15
+                var files = []  // all results after pagination
+
+                while (url) {
+                    var response = await getURLP(url)
+                    var text = JSON.parse(response.text)
+                    text.forEach( f => files.push( {file : Object.keys(f.files)[0],  url : f.html_url,  desc : f.description} )) 
+
+                    // more pages remaining, acording to github api?
+                    if (response.headers.Link && response.headers.Link[0][1] === 'rel="next"')  url = response.headers.Link[0][0].replace(/[<>]/g,'')
+                    else (url = undefined)
+                }
+
+                // print output
+                files.sort( (a,b)=>a.file.toLowerCase() > b.file.toLowerCase()) 
+                var str = `<h1>drodsou´s gists (${files.length})</h1><table>`
                 files.forEach(f=>{
                     //str += `<tr> <td><b><a href="${f.url}">${f.file}</a></b></td> <td><a href="${f.url}">${f.desc}</a></td> </tr>`
                     str += `<tr onClick="window.document.location='${f.url}'"> <td><b>${f.file}</b></td> <td>${f.desc}</td> </tr>`
                 })
                 str += '</table></div>'
                 data.innerHTML = str
-
-            
             })()
-
             
 
         </script>
