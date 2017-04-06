@@ -5,16 +5,35 @@
         <title>drodsou's gists</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style></style>
+        <style>
+            body {
+                display:flex;
+                flex-direction:column;
+                align-items:center;
+                justify-content:center;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+            h1 {color:grey;}
+            table { border-collapse: collapse; cursor:pointer;}
+            tr { border:1px solid grey; }
+            tr:hover { background-color: rgba(0,0,0,.1); }
+            td { padding:5px;}
+            td b {color:#9b39de ;}
+            a { text-decoration:none; }
+
+        </style>
     </head>
     <body>
-        <div id="main"></div>
+        <h1>drodsou´s gists</h1>
+        <div id="data"></div>
+
         <script>
             function getURLP (url) { return new Promise( cb=>{
                 var xhr = new XMLHttpRequest()
                 xhr.open('GET', url, true)
                 xhr.onreadystatechange = function () {
                     if (this.status == 200 && this.readyState == 4) {
+                        console.log(this)
                         cb(this.responseText)
                     }
                 }
@@ -34,10 +53,11 @@
 
                 var str  = '<table>'
                 files.forEach(f=>{
-                    str += `<tr><td><a href="${f.url}">${f.file}</a></td><td>${f.desc}</td></tr>`
+                    //str += `<tr> <td><b><a href="${f.url}">${f.file}</a></b></td> <td><a href="${f.url}">${f.desc}</a></td> </tr>`
+                    str += `<tr onClick="window.document.location='${f.url}'"> <td><b>${f.file}</b></td> <td>${f.desc}</td> </tr>`
                 })
-                str += '</table>'
-                main.innerHTML = str
+                str += '</table></div>'
+                data.innerHTML = str
 
             
             })()
