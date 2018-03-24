@@ -42,7 +42,10 @@
                     text.forEach( f => files.push( {file : Object.keys(f.files)[0],  url : f.html_url,  desc : f.description} )) 
 
                     // more pages remaining, acording to github api?
-                    if (response.headers.Link && response.headers.Link[0][1] === 'rel="next"')  url = response.headers.Link[0][0].replace(/[<>]/g,'')
+                    console.dir(response.headers.Link)
+                    if (response.headers.Link && response.headers.Link[0][1] === 'rel="next"')  {
+                        url = response.headers.Link[0][0].replace(/[<>]/g,'')
+                    }
                     else (url = undefined)
                 }
 
