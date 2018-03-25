@@ -12,7 +12,8 @@ var app = {
  * 
  */
 async function getGists() {
-  var url = 'https://api.github.com/users/drodsou/gists'  //?per_page=15
+  // If 403 forbidden because of rate limite, see: curl -i https://api.github.com/users/octocat
+  var url = 'https://api.github.com/users/drodsou/gists'  //?per_page=30
   var files = []  // all results after pagination
 
   while (url) {
@@ -22,7 +23,7 @@ async function getGists() {
               file : Object.keys(f.files)[0],  
               url : f.html_url,  
               desc : f.description,
-              date : f.updated_at.slice(0,8)
+              date : f.updated_at.slice(0,11)
           })
       ) 
 
