@@ -8,27 +8,45 @@ var app = {
   }
 }
 
+
+async function fetchGet (url, fetchTransform='json') {
+  let response = await fetch( url, {method: 'GET', mode: 'cors'})
+  
+  let headersObj = {}
+  for (var pair of response.headers.entries()) {
+    headersObj[pair[0]] = pair[1]
+  }
+
+  if (!response.ok) { 
+      return {error:response.status, headers:headersObj, body:null} 
+  }
+  else { 
+      let body = await response[fetchTransform]()
+      return {error:null, headers:headersObj, body:body } 
+  }
+}
+
+
 /**
  * 
  */
 async function getGists() {
   // If 403 forbidden because of rate limite, see: curl -i https://api.github.com/users/octocat
-  var url = 'https://api.github.com/users/drodsou/gists'  //?per_page=30
+  var url = 'https://api.github.com/users/drodsou/gists?per_page=100'  // ?per_page=100
   var files = []  // all results after pagination
 
   while (url) {
-      var response = await getURLP(url)
-      var text = JSON.parse(response.text)
-      text.forEach( f => files.push( {
+      var response = await fetchGet(url)
+      response.body.forEach( f => files.push( {
               file : Object.keys(f.files)[0],  
               url : f.html_url,  
-              desc : f.description,
-              date : f.updated_at.slice(0,11)
+              desc : f.description || '',
+              date : f.updated_at.slice(0,10),
+              type : 'gist'
           })
       ) 
 
       // more pages remaining, acording to github api?
-      //console.log('response 1', response.headers.link)
       url = undefined
       if (response.headers.link) {
           let linkArr = (response.headers.link).replace(/</g,'').replace(/>/g,'').replace(/,/g,';').split(';').map(e=>e.trim())
@@ -46,11 +64,52 @@ async function getGists() {
  */
 async function getGistsFake() {
   return [
-    {file:'some gist 2', url:'#', desc:'platinum', date:'20180102'},
-    {file:'some gist 3', url:'#', desc:'just plate', date:'20180103'},
-    {file:'some gist 1', url:'#', desc:'golden', date:'20180101'},
+    {file:'some gist 2', url:'#', desc:'platinum', date:'20180102',type:'gist'},
+    {file:'some gist 3', url:'#', desc:'just plate', date:'20180103',type:'repo'},
+    {file:'some gist 1', url:'#', desc:'golden', date:'20180101', type:'gist'},
   ]
 }
+
+
+
+
+/**
+ * 
+ */
+async function getRepos() {
+  // If 403 forbidden because of rate limite, see: curl -i https://api.github.com/users/octocat
+  var url = 'https://api.github.com/users/drodsou/repos?per_page=100'  //?per_page=30
+  var files = []  // all results after pagination
+
+  while (url) {
+      var response = await fetchGet(url)
+      response.body.forEach( f => files.push( {
+              file : f.name,  
+              url : f.html_url,  
+              desc : f.description || '',
+              date : f.updated_at.slice(0,10),
+              type : 'repo'
+          })
+      ) 
+
+      // more pages remaining, acording to github api?
+      url = undefined
+      if (response.headers.link) {
+          let linkArr = (response.headers.link).replace(/</g,'').replace(/>/g,'').replace(/,/g,';').split(';').map(e=>e.trim())
+          if (linkArr[1] === 'rel="next"')  {
+              url = linkArr[0]
+          }
+      }
+  } // while
+
+  return files
+} // get hists
+
+
+
+
+
+
 
 /**
  * Component
@@ -62,10 +121,11 @@ function Table() {
 
   files.forEach(f=>{
     str += (`
-        <tr class="file" onClick="window.document.location='${f.url}'"> 
-        <td style="font-size:0.9rem;color:#aaa;">${f.date}</td> 
-            <td><b>${f.file}</b></td> 
-            <td>${f.desc}</td> 
+        <tr class="file" onClick="window.open('${f.url}','_blank')"> 
+          <td style="font-size:0.9rem;color:#aaa;width:90px;">${f.date}</td> 
+          <td><b>${f.file}</b></td> 
+          <td>${f.desc}</td> 
+          <td>${f.type}</td> 
         </tr>
     `)
   })
@@ -78,7 +138,7 @@ function Table() {
  */
 function Header() {
   let files = app.filesFiltered
-  return `drodsou's Gists (${files.length})`
+  return `drodsou @ github (${files.length})`
 }
 
 /**
@@ -116,6 +176,7 @@ function filterFiles() {
       !app.filter 
       || f.file.toLowerCase().includes(app.filter.toLowerCase()) 
       || f.desc.toLowerCase().includes(app.filter.toLowerCase())
+      || f.type.toLowerCase().includes(app.filter.toLowerCase())
     ) 
   })
 }
@@ -140,7 +201,11 @@ function render() {
  */
 (async function main() {
   //app.files = await getGistsFake()    // dev mode
-  app.files = await getGists()
+  app.files = []
+  //app.files = app.files.concat( await getGistsFake() )
+  app.files = app.files.concat( await getGists() )
+  app.files = app.files.concat( await getRepos() )
   document.getElementById('theFilter').outerHTML = Filter()
   render()
 })().then( ()=>console.log("started") )
+
