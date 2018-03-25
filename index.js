@@ -1,4 +1,5 @@
 var app = {
+  user : '',
   files : [],
   filter : '',
   filesFiltered : [],
@@ -32,7 +33,7 @@ async function fetchGet (url, fetchTransform='json') {
  */
 async function getGists() {
   // If 403 forbidden because of rate limite, see: curl -i https://api.github.com/users/octocat
-  var url = 'https://api.github.com/users/drodsou/gists?per_page=100'  // ?per_page=100
+  var url = `https://api.github.com/users/${app.user}/gists?per_page=100`  // ?per_page=100
   var files = []  // all results after pagination
 
   while (url) {
@@ -48,7 +49,7 @@ async function getGists() {
 
       // more pages remaining, acording to github api?
       url = undefined
-      if (response.headers.link) {
+      if (app.user === 'drodsou' && response.headers.link) {
           let linkArr = (response.headers.link).replace(/</g,'').replace(/>/g,'').replace(/,/g,';').split(';').map(e=>e.trim())
           if (linkArr[1] === 'rel="next"')  {
               url = linkArr[0]
@@ -78,7 +79,7 @@ async function getGistsFake() {
  */
 async function getRepos() {
   // If 403 forbidden because of rate limite, see: curl -i https://api.github.com/users/octocat
-  var url = 'https://api.github.com/users/drodsou/repos?per_page=100'  //?per_page=30
+  var url = `https://api.github.com/users/${app.user}/repos?per_page=100`  //?per_page=30
   var files = []  // all results after pagination
 
   while (url) {
@@ -94,7 +95,7 @@ async function getRepos() {
 
       // more pages remaining, acording to github api?
       url = undefined
-      if (response.headers.link) {
+      if ( app.user === 'drodsou' && response.headers.link) {
           let linkArr = (response.headers.link).replace(/</g,'').replace(/>/g,'').replace(/,/g,';').split(';').map(e=>e.trim())
           if (linkArr[1] === 'rel="next"')  {
               url = linkArr[0]
@@ -138,7 +139,7 @@ function Table() {
  */
 function Header() {
   let files = app.filesFiltered
-  return `drodsou @ github (${files.length})`
+  return `${app.user} @ github (${files.length})`
 }
 
 /**
@@ -196,16 +197,20 @@ function render() {
 }
 
 
-/**
- *  Main
- */
-(async function main() {
+async function firstRender() {
+  app.user = location.hash.slice(1) || 'drodsou'
   //app.files = await getGistsFake()    // dev mode
   app.files = []
   //app.files = app.files.concat( await getGistsFake() )
   app.files = app.files.concat( await getGists() )
   app.files = app.files.concat( await getRepos() )
-  document.getElementById('theFilter').outerHTML = Filter()
   render()
-})().then( ()=>console.log("started") )
+}
 
+
+/**
+ *  Main
+ */
+document.getElementById('theFilter').outerHTML = Filter()
+window.addEventListener('hashchange',firstRender)
+firstRender()
