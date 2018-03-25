@@ -5,15 +5,20 @@
         <title>drodsou's gists</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+
         <style>
             body {
+                font-family: 'Montserrat', sans-serif;
+
                 display:flex;
                 flex-direction:column;
                 align-items:center;
-                font-family: Arial, Helvetica, sans-serif;
+                overflow-y: scroll;
             }
             h1 {color:rgba(100, 0, 169, 1);}
-            table { border-collapse: collapse; }
+            table { border-collapse: collapse; width:90vw; margin-top:10px;}
             tr { border:1px solid grey; }
             tr.file:hover { background-color: rgba(100, 0, 169, .2); }
             tr.file td { padding:5px; cursor:pointer;}
@@ -25,68 +30,12 @@
         </style>
     </head>
     <body>
-        <div id="data"></div>
+        <h1 id="theHeader"></h1>
+        <input id="theFilter"/>
+        <div id="theTable"></div>
 
         <script desc="getURLPe.js @ gist.github.com/drodsou" src="https://gist.githack.com/drodsou/cacb5409f5871588674116c6ee6dd368/raw/9a999168eeb79497e0535a5b126333bdad483100/getURLPe.js"></script>
-        <script>
-
-            // main
-            (async function () {
-
-                var url = 'https://api.github.com/users/drodsou/gists'  //?per_page=15
-                var files = []  // all results after pagination
-
-                while (url) {
-                    var response = await getURLP(url)
-                    var text = JSON.parse(response.text)
-                    text.forEach( f => files.push( {file : Object.keys(f.files)[0],  url : f.html_url,  desc : f.description} )) 
-
-                    // more pages remaining, acording to github api?
-                    //console.log('response 1', response.headers.link)
-                    url = undefined
-                    if (response.headers.link) {
-                        let linkArr = (response.headers.link).replace(/</g,'').replace(/>/g,'').replace(/,/g,';').split(';').map(e=>e.trim())
-                        if (linkArr[1] === 'rel="next"')  {
-                            url = linkArr[0]
-                        }
-                    }
-                }
-
-                // sort by extension + name
-                //files = files.sort( (a,b) => a.file.toLowerCase() > b.file.toLowerCase() ? 1:-1 )     // fckn sort just. mandatory 1:-1. Only > works sometimes in small arrays but just by chance
-                files = files.sort( (a,b) => {
-                    // preprocess both a and b
-                    var ab = [a,b].map(e=>{
-                        e = e.file.toLowerCase()
-                        e = e.split('.').pop() + e
-                        if (e.startsWith('js')) e = '0'+e   // raise javascript to the top
-                        return e
-                    })
-                    // sort return
-                    return ab[0]>ab[1] ? 1 : -1
-                })
-
-                // print out
-                var str = (`
-                    <h1>drodsou´s gists (${files.length})</h1>
-                    <table>
-                `)
-                var curSection =''
-                files.forEach(f=>{
-                    let fExt = f.file.split('.').pop()
-                    if (fExt !== curSection) { 
-                        // new section header
-                        curSection = fExt; 
-                        str += `<tr class="section"><td colspan="2">${curSection}</td></tr>`
-                    }
-                    // normal data row
-                    str += `<tr class="file" onClick="window.document.location='${f.url}'"> <td><b>${f.file}</b></td> <td>${f.desc}</td> </tr>`
-                })
-                str += '</table>'
-                data.innerHTML = str
-            })()
-            
-
-        </script>
+        <script src="index.js"></script>
+    
     </body>
 </html>
