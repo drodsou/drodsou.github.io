@@ -22,14 +22,14 @@ async function getGists() {
               file : Object.keys(f.files)[0],  
               url : f.html_url,  
               desc : f.description,
-              date : f.updated_at
+              date : f.updated_at.slice(0,8)
           })
       ) 
 
       // more pages remaining, acording to github api?
       //console.log('response 1', response.headers.link)
       url = undefined
-      if (response.headers.linkXXX) {
+      if (response.headers.link) {
           let linkArr = (response.headers.link).replace(/</g,'').replace(/>/g,'').replace(/,/g,';').split(';').map(e=>e.trim())
           if (linkArr[1] === 'rel="next"')  {
               url = linkArr[0]
@@ -40,7 +40,16 @@ async function getGists() {
   return files
 } // get hists
 
-
+/**
+ * 
+ */
+async function getGistsFake() {
+  return [
+    {file:'some gist 2', url:'#', desc:'platinum', date:'20180102'},
+    {file:'some gist 3', url:'#', desc:'just plate', date:'20180103'},
+    {file:'some gist 1', url:'#', desc:'golden', date:'20180101'},
+  ]
+}
 
 /**
  * Component
@@ -129,6 +138,7 @@ function render() {
  *  Main
  */
 (async function main() {
+  //app.files = await getGistsFake()    // dev mode
   app.files = await getGists()
   document.getElementById('theFilter').outerHTML = Filter()
   render()
