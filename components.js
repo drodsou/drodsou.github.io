@@ -1,15 +1,15 @@
 /**
  * Component
  */
- export function Header(app) {
-  let files = app.filesFiltered
-  return `${app.user} @ github (${files.length})`
+ export function Header(app, target) {
+  let files = app.filesFiltered;
+  target.innerHTML = `${app.user} @ github (${files.length})`;
 }
 
 /**
  * Component
  */
-export function Filter(app) {
+export function Filter(app, target) {
   let iconSearch = "https://storage.googleapis.com/material-icons/external-assets/v4/icons/svg/ic_search_black_24px.svg"
   let iconLoading = "https://storage.googleapis.com/material-icons/external-assets/v4/icons/svg/ic_sync_black_24px.svg"
   let str = `
@@ -47,29 +47,38 @@ export function Filter(app) {
           to { transform: rotate(-359deg); }
         }
       </style>
-      <input />
+      <input value="${app.filter}" />
       <img  
         class="${app.loading ? 'rotate' : ''}"
         src="${app.loading ? iconLoading : iconSearch}"
       ></img>
-    </div>
-  `
-  setTimeout(()=>{
-    let theFilterInput = document.querySelector('#theFilter input')
-    theFilterInput.addEventListener('keyup',(ev)=>{
-      app.set('filter', theFilterInput.value)
-    })
-    theFilterInput.focus()
-  },1)
+     </div>
+  `;
 
-  return str
+  if (!target.innerHTML) {
+    // first render
+    target.innerHTML = str;
+    setTimeout(()=>{
+      let theFilterInput = document.querySelector('#theFilter input')
+      theFilterInput.addEventListener('keyup',(ev)=>{
+        app.set('filter', theFilterInput.value)
+      })
+      theFilterInput.focus()
+    },1)
+  } 
+  else {
+    // update
+    let img = document.querySelector('#theFilter img')
+    img.className =app.loading ? 'rotate' : '';
+    img.src = app.loading ? iconLoading : iconSearch;
+  }
 }
 
 
 /**
  * Component
  */
-export function Table(app) {
+export function Table(app, target) {
   let files = app.filesFiltered
   
   var str = (`<table>`)
@@ -85,7 +94,7 @@ export function Table(app) {
     `)
   })
   str += '</table>'
-  return str
+  target.innerHTML = str;
 }
 
 

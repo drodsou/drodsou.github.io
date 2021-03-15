@@ -10,11 +10,12 @@ var app = {
     this[prop] = value
     render()
   },
-  loading : true
+  loading : true,
+  debug : false
 }
 
 // debug
-window.app = app;
+if (app.debug) window.app = app;
 
 window.addEventListener('hashchange',init)
 init()
@@ -55,9 +56,13 @@ async function init() {
   app.loading = true;
   render()
   
-  // app.files = app.files.concat( await getGistsFake() ); // debug
-  app.files = app.files.concat( await getGists(app) )
-  app.files = app.files.concat( await getRepos(app) )
+  if (app.debug) { 
+    app.files = app.files.concat( await getGistsFake() ); 
+  }
+  else {
+    app.files = app.files.concat( await getGists(app) );
+    app.files = app.files.concat( await getRepos(app) );
+  }
   
   app.loading = false;
   render()
@@ -69,10 +74,9 @@ async function init() {
 function render() {
   filterFiles()
   sortFiles()
-  document.getElementById('theFilter').innerHTML = Filter(app)
-  document.getElementById('theHeader').innerHTML = Header(app)
-  document.getElementById('theTable').innerHTML = Table(app)
- 
+  Filter(app, document.getElementById('theFilter'));
+  Header(app, document.getElementById('theHeader'));
+  Table(app, document.getElementById('theTable'));
 }
 
 

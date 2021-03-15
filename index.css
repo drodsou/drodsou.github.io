@@ -4,22 +4,26 @@ body {
   flex-direction:column;
   align-items:center;
   overflow-y: scroll;
+
+  --color-fg: rgba(100, 0, 169, 1);
+  --color-fg-light: rgba(100, 0, 169, .2);
+  
 }
 
-h1 {color:rgba(100, 0, 169, 1);}
+h1 {color: var(--color-fg); }
 
 table { border-collapse: collapse; width:90vw; margin-top:10px;}
 
 tr { border:1px solid grey; }
 
-tr.file:hover { background-color: rgba(100, 0, 169, .2); }
+tr.file:hover { background-color: var(--color-fg-light); }
 
 tr.file td { padding:5px; cursor:pointer;}
 
-tr.file b {color:rgba(100, 0, 169, 1)}
+tr.file b {color:var(--color-fg); }
 
 tr.section td {
-  background-color:rgba(100, 0, 169, 1); 
+  background-color:var(--color-fg); 
   color:white; 
   padding:10px 20px 10px 20px;
 }
@@ -28,5 +32,10 @@ a { text-decoration:none; }
 
 #newGist {
   padding-right: 24px;
+}
+
+a.github-fork-ribbon::before {
+  background: var(--color-fg);
+
 }
 
