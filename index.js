@@ -153,7 +153,7 @@ function Filter() {
          display:inline-block; width:200px; text-align:center; outline-width:0px;
          border:1px solid #aaa; border-radius:12px; padding-bottom:2px;
       "></span>
-      <img style="height:16px;position:relative; left:-22px;top:3px;" 
+      <img style="height:16px;position:relative; left:-33px;top:3px;" 
         src="https://storage.googleapis.com/material-icons/external-assets/v4/icons/svg/ic_search_black_24px.svg"
       ></img>
     </div>
