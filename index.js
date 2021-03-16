@@ -1,4 +1,4 @@
-import {getGists, getGistsFake, getRepos, fetchGet } from './github.js';
+import {getGithub, getGithubFake, fetchGet } from './github.js';
 import {Header, Filter, Table} from './components.js';
 
 var app = {
@@ -31,9 +31,9 @@ function filterFiles() {
     let filter = (app.filter||'').toLowerCase().trim();
     return (
       filter === ''
-      || f.file.toLowerCase().includes(filter) 
-      || f.desc.toLowerCase().includes(filter)
-      || f.type.toLowerCase().includes(filter)
+      || (f.file||'').toLowerCase().includes(filter) 
+      || (f.desc||'').toLowerCase().includes(filter)
+      || (f.type||'').toLowerCase().includes(filter)
     ) 
   })
 }
@@ -57,11 +57,11 @@ async function init() {
   render()
   
   if (app.debug) { 
-    app.files = app.files.concat( await getGistsFake() ); 
+    app.files = app.files.concat( await getGithubFake() ); 
   }
   else {
-    app.files = app.files.concat( await getGists(app) );
-    app.files = app.files.concat( await getRepos(app) );
+    app.files = app.files.concat( await getGithub(app, 'gist') );
+    app.files = app.files.concat( await getGithub(app, 'repo') );
   }
   
   app.loading = false;

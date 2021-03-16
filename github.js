@@ -1,9 +1,11 @@
 /**
  * helper function
+ * returns {error:int, headers:object, body:object}
 */
 export async function fetchGet (url, fetchTransform='json') {
   let response = await fetch( url, {method: 'GET', mode: 'cors'})
   
+  // -- iterator to plain object
   let headersObj = {}
   for (var pair of response.headers.entries()) {
     headersObj[pair[0]] = pair[1]
@@ -20,42 +22,9 @@ export async function fetchGet (url, fetchTransform='json') {
 
 
 /**
- * get my gists from github API
- */
-export async function getGists(app) {
-  // If 403 forbidden because of rate limite, see: curl -i https://api.github.com/users/octocat
-  var url = `https://api.github.com/users/${app.user}/gists?per_page=100`  // ?per_page=100
-  var files = []  // all results after pagination
-
-  while (url) {
-      var response = await fetchGet(url)
-      response.body.forEach( f => files.push( {
-              file : Object.keys(f.files)[0],  
-              url : f.html_url,  
-              desc : f.description || '',
-              date : f.updated_at.slice(0,10),
-              type : 'gist'
-          })
-      ) 
-
-      // more pages remaining, acording to github api?
-      url = undefined
-      if (app.user === 'drodsou' && response.headers.link) {
-          let linkArr = (response.headers.link).replace(/</g,'').replace(/>/g,'').replace(/,/g,';').split(';').map(e=>e.trim())
-          if (linkArr[1] === 'rel="next"')  {
-              url = linkArr[0]
-          }
-      }
-  } // while
-
-  return files
-} // get hists
-
-
-/**
  * debug helper
  */
-export async function getGistsFake() {
+export async function getGithubFake() {
   await new Promise(resolve=>setTimeout(resolve,2000));
   
   return [
@@ -67,27 +36,28 @@ export async function getGistsFake() {
 
 
 /**
- * get my repos from github API
+ * get gists or repos from github API
+ * @param {'repo' | 'gist'} repoOrGist
  */
-export async function getRepos(app) {
+ export async function getGithub(app, repoOrGist) {
   // If 403 forbidden because of rate limite, see: curl -i https://api.github.com/users/octocat
-  var url = `https://api.github.com/users/${app.user}/repos?per_page=100`  //?per_page=30
+  var url = `https://api.github.com/users/${app.user}/${repoOrGist}s?per_page=100`  //?per_page=30
   var files = []  // all results after pagination
 
   while (url) {
       var response = await fetchGet(url)
       response.body.forEach( f => files.push( {
-              file : f.name,  
+              file : repoOrGist === 'repo' ? f.name : Object.keys(f.files)[0],  
               url : f.html_url,  
               desc : f.description || '',
               date : f.updated_at.slice(0,10),
-              type : 'repo'
+              type : repoOrGist
           })
       ) 
 
       // more pages remaining, acording to github api?
       url = undefined
-      if ( app.user === 'drodsou' && response.headers.link) {
+      if ( response.headers.link) {
           let linkArr = (response.headers.link).replace(/</g,'').replace(/>/g,'').replace(/,/g,';').split(';').map(e=>e.trim())
           if (linkArr[1] === 'rel="next"')  {
               url = linkArr[0]
@@ -96,4 +66,4 @@ export async function getRepos(app) {
   } // while
 
   return files
-} // get hists
+} 
